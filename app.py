@@ -42,9 +42,25 @@ def build_query_string(codes):
     return "|".join(parts)
 
 
+@app.route("/")
+def home():
+    codes_param = request.args.get("codes")
+    if not codes_param:
+        return jsonify({
+            "status": "ok",
+            "usage": "/?codes=2330,0050",
+            "note": "回傳台灣證交所即時報價（延遲約數秒）",
+        })
+    return quote_logic(codes_param)
+
+
 @app.route("/quote")
 def quote():
     codes_param = request.args.get("codes", "2330")
+    return quote_logic(codes_param)
+
+
+def quote_logic(codes_param):
     codes = codes_param.split(",")
     ex_ch = build_query_string(codes)
 
@@ -132,15 +148,6 @@ def quote():
 
     now = datetime.now(TW_TZ).isoformat()
     return jsonify({"queried_at": now, "results": results})
-
-
-@app.route("/")
-def home():
-    return jsonify({
-        "status": "ok",
-        "usage": "/quote?codes=2330,0050",
-        "note": "回傳台灣證交所即時報價（延遲約數秒）",
-    })
 
 
 if __name__ == "__main__":
